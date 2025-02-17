@@ -9,10 +9,10 @@ import org.springframework.data.redis.core.script.RedisScript;
 
 import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class SimpleRedisLock implements ILock {
-
     private String name;
     private StringRedisTemplate stringRedisTemplate;
 

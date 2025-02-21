@@ -59,11 +59,11 @@ class HmDianPingApplicationTests {
         shopService.saveShop2Redis(1L,10L);
     }
     @Test
-    void loadShopDate(){
+    void loadShopDate() {
         // 1.查询店铺信息
         List<Shop> list = shopService.list();
         // 2.把店铺分组，按照typeId分组,ud一致的放到一个集合
-        Map<Long,List<Shop>> map = list.stream().collect(Collectors.groupingBy(Shop::getTypeId));
+        Map<Long, List<Shop>> map = list.stream().collect(Collectors.groupingBy(Shop::getTypeId));
         // 3.分批完成写入Redis
         for (Map.Entry<Long, List<Shop>> entry : map.entrySet()) {
             // 3.1获取类型id
@@ -76,11 +76,26 @@ class HmDianPingApplicationTests {
             for (Shop shop : value) {
 //                stringRedisTemplate.opsForGeo().add(key,new Point(shop.getX(),shop.getY()),shop.getId().toString());
                 locations.add(new RedisGeoCommands.GeoLocation<>(shop.getId()
-                        .toString(),new Point(shop.getX(),shop.getY())));
+                        .toString(), new Point(shop.getX(), shop.getY())));
             }
-            stringRedisTemplate.opsForGeo().add(key,locations);
+            stringRedisTemplate.opsForGeo().add(key, locations);
         }
-
+    }
+    @Test
+    void testHyperLogLog(){
+        String[] values = new String[1000];
+        int j = 0;
+        for (int i = 0; i < 1000000; i++) {
+            j = i % 1000;
+            values[j] = "user_"+i;
+            if(j == 999){
+                // 发送到Redis
+                stringRedisTemplate.opsForHyperLogLog().add("hl2",values);
+            }
+        }
+        // 统计数量
+        Long count = stringRedisTemplate.opsForHyperLogLog().size("hl2");
+        System.out.println("count = " + count);
     }
 
 }
